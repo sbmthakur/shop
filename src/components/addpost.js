@@ -29,7 +29,7 @@ export const Count = props => {
     aria-label="Count of the item"
     id={props.id ? `count-${props.id}` : 'count'}
     type="number"
-    placeholder={props.count ? props.count : 0}
+    placeholder={props.count ? props.count : 1}
     defaultValue={props.count ? Number(props.count) : ''}
     required
   />
