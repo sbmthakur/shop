@@ -46,8 +46,26 @@ function App() {
   }
 
   const deletePost = async (postId) => {
-    let post = posts.find(p => p.id === postId)
-    await updatePostWorkers(post)
+    //let post = posts.find(p => p.id === postId)
+    let myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    let requestOptions = {
+      method: 'DELETE',
+      headers: myHeaders,
+      body: JSON.stringify({
+        id: postId
+      })
+    };
+    try {
+      await fetch(`${WORKERS_URL}/deleteitem`, requestOptions)// eslint-disable-line
+        .then(response => response.text())
+    } catch (err) {
+      alert('Invalid response while adding. Please check the console');
+      let errorMessage = err && err.message ? err.message : err;
+      console.error(errorMessage);
+    }
+    setPosts(posts.filter(p => p.id !== postId))
   }
 
   const updatePost = async modifiedPost => {

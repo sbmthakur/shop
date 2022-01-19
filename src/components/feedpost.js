@@ -92,6 +92,10 @@ const FeedPost = (props) => {
           >
             <Button style={{}}
               variant='danger'
+              onClick={async () => {
+                await props.deletePost(post.id)
+              }
+              }
             >Delete</Button>
           </OverlayTrigger>
 
