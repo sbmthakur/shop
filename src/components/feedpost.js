@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 //import { Link } from "@reach/router";
 import { Button, ButtonGroup, Card, OverlayTrigger, Tooltip } from "react-bootstrap";
-import { Name, Description, Count } from './addpost'
+import { Name, Description, Count, FileUpload, createThumbnail } from './addpost'
 
 const ShowName = (props) => {
   const editEnabled = props.edit
@@ -17,7 +17,7 @@ const ShowThumbnail = (props) => {
   const editEnabled = props.edit
   const thumbnail = props.thumbnail_img
   if (editEnabled) {
-    //return <Name name={name} id={props.id} />
+    return <FileUpload handleChange={props.handleChange} title='Update thumbnail' />
   } else {
     return <Card.Img style={{
       width: '200px',
@@ -44,13 +44,13 @@ const ShowDescription = (props) => {
 
 const ShowCount = (props) => <Count count={props.count} id={props.id} />
 
-const processEdit = async (id, fileData) => {
+const processEdit = async (id, originalImage, thumbnailImage) => {
   let name = document.getElementById(`name-${id}`).value
   let count = document.getElementById(`count-${id}`).value
   let description = document.getElementById(`description-${id}`).value
 
-  let img = fileData ? fileData : ''
-  let thumbnail_img = ''
+  let img = originalImage
+  let thumbnail_img = thumbnailImage
 
   let modifiedPost = {
     id,
@@ -68,10 +68,21 @@ const FeedPost = (props) => {
   let post = props.post
 
   const [edit, setEdit] = useState(false)
+  const [newImage, setFileData] = useState('')
+
+  const handleChange = async (event) => {
+    let file = event.target.files[0];
+    let reader = new FileReader();
+    reader.onload = function (event) {
+      let data = event.target.result
+      setFileData(data)
+    };
+    reader.readAsDataURL(file);
+  }
 
   return (
     <Card key={post.id} style={{ width: '18rem', margin: '0 5%', backgroundColor: 'whitesmoke' }} >
-      <ShowThumbnail edit={edit} thumbnail_img={post.thumbnail_img} />
+      <ShowThumbnail edit={edit} thumbnail_img={post.thumbnail_img} handleChange={handleChange} />
       <Card.Body>
         <ShowName edit={edit} name={post.name} id={post.id} />
         <ShowDescription edit={edit} description={post.description} id={post.id} />
@@ -110,9 +121,18 @@ const FeedPost = (props) => {
               variant='warning'
               onClick={async () => {
                 if (edit) {
-                  let modPost = await processEdit(post.id, props.updatePost)
+                  let thumbnailImage, originalImage
+                  if (newImage) {
+                    thumbnailImage = await createThumbnail(newImage, 200)
+                    originalImage = newImage
+                  } else {
+                    thumbnailImage = post.thumbnail_img
+                    originalImage = post.original_img
+                  }
+                  let modPost = await processEdit(post.id, originalImage, thumbnailImage)
                   props.updatePost(modPost)
                   setEdit(false)
+                  setFileData('')
                 } else {
                   setEdit(true)
                 }

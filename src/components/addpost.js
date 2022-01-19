@@ -37,7 +37,7 @@ export const Count = props => {
 
 export const FileUpload = props => {
   return <Form.Group controlId="formFile" className="mb-3">
-    <Form.Label>Upload media</Form.Label>
+    <Form.Label>{props.title ? props.title : 'Upload image for thumbnail'}</Form.Label>
     <Form.Control
       type="file"
       onChange={props.handleChange}
@@ -46,40 +46,40 @@ export const FileUpload = props => {
   </Form.Group>
 }
 
+export const createThumbnail = async (base64Image, targetSize) => {
+  return new Promise(resolve => {
+    let img = new Image();
+
+    img.onload = function () {
+      let width = img.width,
+        height = img.height,
+        canvas = document.createElement('canvas'),
+        ctx = canvas.getContext("2d");
+
+      canvas.width = canvas.height = targetSize;
+
+      ctx.drawImage(
+        img,
+        width > height ? (width - height) / 2 : 0,
+        height > width ? (height - width) / 2 : 0,
+        width > height ? height : width,
+        width > height ? height : width,
+        0, 0,
+        targetSize, targetSize
+      );
+      let img_str = canvas.toDataURL()
+      resolve(img_str)
+    };
+
+    img.src = base64Image;
+  })
+};
+
 const AddPost = (props) => {
 
   const ref = useRef(null)
 
   const [fileData, setFileData] = useState('')
-
-  const thumbnailify = async (base64Image, targetSize) => {
-    return new Promise(resolve => {
-      let img = new Image();
-
-      img.onload = function () {
-        let width = img.width,
-          height = img.height,
-          canvas = document.createElement('canvas'),
-          ctx = canvas.getContext("2d");
-
-        canvas.width = canvas.height = targetSize;
-
-        ctx.drawImage(
-          img,
-          width > height ? (width - height) / 2 : 0,
-          height > width ? (height - width) / 2 : 0,
-          width > height ? height : width,
-          width > height ? height : width,
-          0, 0,
-          targetSize, targetSize
-        );
-        let img_str = canvas.toDataURL()
-        resolve(img_str)
-      };
-
-      img.src = base64Image;
-    })
-  };
 
   const submitMetadata = async (originalImage, thumbnailImage) => {
 
@@ -120,13 +120,13 @@ const AddPost = (props) => {
 
     return newPost
   }
+
   const handleChange = async (event) => {
     let file = event.target.files[0];
     let reader = new FileReader();
     reader.onload = function (event) {
       let data = event.target.result
       setFileData(data)
-      //event.target.value = ''
     };
     reader.readAsDataURL(file);
   }
@@ -138,7 +138,7 @@ const AddPost = (props) => {
       event.stopPropagation();
     }
 
-    let thumbnailImage = await thumbnailify(fileData, 200)
+    let thumbnailImage = await createThumbnail(fileData, 200)
     let newPost = await submitMetadata(fileData, thumbnailImage)
 
     props.addNewPost(newPost)
