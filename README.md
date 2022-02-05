@@ -1,4 +1,6 @@
-This is a small React app hosted on Cloudflare Pages. It's a frontend to an inventory application. The backend for the same is being run on Cloudflare workers and the code can be found here. 
+This is a small React app hosted on Cloudflare Pages. It's a frontend to an inventory application. The backend for the same is being run on Cloudflare workers and the code can be found here:
+
+https://github.com/sbmthakur/inventory
 
 # Local setup
 
